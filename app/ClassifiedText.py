@@ -9,5 +9,3 @@ class ClassifiedText(object):
         self.quantity = []
         self.title = []
         self.other = []
-
-    

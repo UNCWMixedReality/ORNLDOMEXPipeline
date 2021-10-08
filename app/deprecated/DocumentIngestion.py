@@ -39,9 +39,9 @@ def extract_all_data_from_a_directory(
     parent_directory: str, desired_depth: int
 ) -> dict:
     expression = top_n_levels_expression(parent_directory, desired_depth, ".txt")
-    logging.debug(f'Expression: {expression}')
+    logging.debug(f"Expression: {expression}")
     all_files = glob.glob(expression)
-    logging.debug(f'File List: {all_files}')
+    logging.debug(f"File List: {all_files}")
 
     extracted_data = {}
 
@@ -54,10 +54,10 @@ def extract_all_data_from_a_directory(
         else:
             name = each_file.split("/")[-1].replace(".txt", "")
 
-        logging.debug(f'Name Generated: {name}')
+        logging.debug(f"Name Generated: {name}")
 
         extracted_data[name] = {"text": text}
 
-    logging.debug(f'[INFO] Final Dictionary: {extracted_data}')
+    logging.debug(f"[INFO] Final Dictionary: {extracted_data}")
 
     return extracted_data

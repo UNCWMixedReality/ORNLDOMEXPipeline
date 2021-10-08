@@ -3,9 +3,8 @@
 # and [debug] for things that will be helpful when stuff breaks, like all FileNotFound errors
 from ClassifiedText import ClassifiedText
 
+
 class TextClassifier(object):
-    
-    
     def __init__(self):
         pass
 
