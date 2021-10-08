@@ -8,8 +8,3 @@ repos:
     rev: v1.2.3
     hooks:
     - id: flake8
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.9
-    hooks:
-    - id: flake8
-    - args: '--config=./app/.flake8'
