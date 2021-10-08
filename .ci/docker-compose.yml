@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  domex_pipeline:
+    build: ../app
+    image: sethangell/ornl-domex-pipeline
+    container_name: domex_pipeline
+    volumes: 
+      - ../app/:/usr/src/app/

@@ -12,3 +12,6 @@ textblob==0.15.3
 tomli==1.2.1
 tqdm==4.62.2
 typing-extensions==3.10.0.2
+pytest-cov==2.12.1
+pytest==6.2.5
+flake8===3.9.2

@@ -147,3 +147,6 @@ cython_debug/
 env
 
 domex_pipeline.log
+
+.vscode/*
+.vscode
