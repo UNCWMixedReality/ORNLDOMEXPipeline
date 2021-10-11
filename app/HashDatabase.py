@@ -22,6 +22,8 @@ class HashDatabase(object):
             - Return false and None
         """
 
+        return (None, None)
+
     def add_new_results_to_hash(self, hash: int, results: str):
         """
         Given: A hash value and results in an array
@@ -33,3 +35,17 @@ class HashDatabase(object):
             log everything (previous content, new content, hash, datetime)
             - If hash exists and file is empty, store results in file
         """
+        pass
+
+    # private methods
+    def _check_for_results_directory(self, parent_path: str):
+        """
+        Given: a parent directory
+
+        Steps:
+            - check if a "DOMEXResults" directory exists
+            - if so, pass
+            - if not, generate a new DOMEXResults directory as a child of the
+            given parent directory
+        """
+        pass
