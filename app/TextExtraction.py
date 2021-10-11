@@ -38,6 +38,17 @@ class TextExtractor(object):
 
         return None
 
+    def hash_and_cache_output(self, output: str) -> tuple[bool, int]:
+        """
+        Given: A file path and an output strung
+        Return: A boolean representing whether this has existed already or not
+
+        Steps:
+            - Hash the output
+            - Pass hash and output to database object to check if hash exists
+            - Return the output from the database object
+        """
+
     # Private methods
     def _extract_text_from_txt_file(self, file_path: str) -> str:
         """
@@ -59,6 +70,8 @@ class TextExtractor(object):
             - Feel free to split into multiple helper methods if necessary
         """
 
+        return None
+
     def _extract_text_from_pdf_file(self, file_path: str) -> str:
         """
         Given: A .pdf file path
@@ -68,3 +81,5 @@ class TextExtractor(object):
             - For now, images can be ignored
             - Table data can also be ignored
         """
+
+        return None

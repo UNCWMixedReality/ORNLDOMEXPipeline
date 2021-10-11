@@ -15,3 +15,10 @@ class TextClassifier(object):
         Return: A completed ClassifiedText object
         """
         return None
+
+    # Private methods
+    def _classify_with_azure(self, text: str) -> ClassifiedText:
+        return None
+
+    def _classify_with_aws(self, text: str) -> ClassifiedText:
+        return None
