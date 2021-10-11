@@ -50,7 +50,7 @@ def test_single_complex_pdf_file(new_text_extractor, expected_output):
 
 # File Discovery
 def test_directory_crawler_top_level(new_text_extractor):
-    output = new_text_extractor.crawl_directory("test_data", 1)
+    output = new_text_extractor._crawl_directory("test_data", 1)
     top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
     bottom_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
 
@@ -59,7 +59,7 @@ def test_directory_crawler_top_level(new_text_extractor):
 
 
 def test_directory_crawler_bottom_level(new_text_extractor):
-    output = new_text_extractor.crawl_directory("test_data", 3)
+    output = new_text_extractor._crawl_directory("test_data", 3)
 
     top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
     mid_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
@@ -72,9 +72,19 @@ def test_directory_crawler_bottom_level(new_text_extractor):
 
 def test_invalid_parent_directory(new_text_extractor):
     with pytest.raises(FileNotFoundError):
-        new_text_extractor.crawl_directory("/foo/bar", 1)
+        new_text_extractor._crawl_directory("/foo/bar", 1)
 
 
 def test_invalid_depth(new_text_extractor):
     with pytest.raises(ValueError):
-        new_text_extractor.crawl_directory("test_data", 0)
+        new_text_extractor._crawl_directory("test_data", 0)
+
+
+# Text Formatting
+def test_contraction_expansion(new_text_extractor):
+    expected_output = "I cannot wait for the day that coffee is not a stigma. I will not go a day without it."
+    test_input = "I can't wait for the day that coffee isn't a stigma. I won't go a day without it."
+
+    generated_output = new_text_extractor._expand_contractions(test_input)
+
+    assert expected_output == generated_output

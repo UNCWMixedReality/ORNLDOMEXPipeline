@@ -83,3 +83,21 @@ class TextExtractor(object):
         """
 
         return None
+
+    def _crawl_directory(self, directory: str, depth: int) -> list:
+        """
+        Given: A directory path and depth
+        Return: A list of all valid files in that directory down to the defined depth
+        """
+
+        return None
+
+    def _expand_contractions(self, contracted_text: str) -> str:
+        """
+        Given: A string containing text
+        Return: A copy of the string with all contractions expanded
+
+        Notes:
+            - See here for implementation:
+            - https://towardsdatascience.com/text-summarization-using-deep-neural-networks-e7ee7521d804
+        """
