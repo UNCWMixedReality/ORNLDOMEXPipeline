@@ -1,12 +1,13 @@
 from app.TextExtraction import TextExtractor
 import re
+import os
 from hashlib import sha256
 import pytest
 
 # File Extraction
 def test_valid_txt_file_path(new_text_extractor, expected_output):
     new_output = new_text_extractor.extract_text_from_single_file(
-        "./test_data/goldilocks.txt"
+        os.getcwd() + "/tests/test_data/goldilocks.txt"
     )
 
     assert new_output == expected_output
@@ -19,7 +20,7 @@ def test_invalid_txt_file_path(new_text_extractor):
 
 def test_single_simple_docx_file(new_text_extractor, expected_output):
     new_output = new_text_extractor.extract_text_from_single_file(
-        "./test_data/goldilocks_only.docx"
+        os.getcwd() + "/tests/test_data/goldilocks_only.docx"
     )
 
     assert new_output == expected_output
@@ -27,7 +28,7 @@ def test_single_simple_docx_file(new_text_extractor, expected_output):
 
 def test_single_simple_doc_file(new_text_extractor, expected_output):
     new_output = new_text_extractor.extract_text_from_single_file(
-        "./test_data/goldilocks_only.doc"
+        os.getcwd() + "/tests/test_data/goldilocks_only.doc"
     )
 
     assert new_output == expected_output
@@ -35,7 +36,8 @@ def test_single_simple_doc_file(new_text_extractor, expected_output):
 
 def test_single_complex_docx_file(new_text_extractor, expected_output):
     new_output = new_text_extractor.extract_text_from_single_file(
-        "./test_data/goldilocks_tables_and_photo_and_messy_formatting.docx"
+        os.getcwd()
+        + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.docx"
     )
 
     assert new_output == expected_output
@@ -43,7 +45,8 @@ def test_single_complex_docx_file(new_text_extractor, expected_output):
 
 def test_single_complex_pdf_file(new_text_extractor, expected_output):
     new_output = new_text_extractor.extract_text_from_single_file(
-        "./test_data/goldilocks_tables_and_photo_and_messy_formatting.pdf"
+        os.getcwd()
+        + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.pdf"
     )
 
     assert new_output == expected_output
@@ -51,7 +54,7 @@ def test_single_complex_pdf_file(new_text_extractor, expected_output):
 
 # File Discovery
 def test_directory_crawler_top_level(new_text_extractor):
-    output = new_text_extractor._crawl_directory("test_data", 1)
+    output = new_text_extractor._crawl_directory(os.getcwd() + "/tests/test_data", 1)
     top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
     bottom_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
 
@@ -60,7 +63,7 @@ def test_directory_crawler_top_level(new_text_extractor):
 
 
 def test_directory_crawler_bottom_level(new_text_extractor):
-    output = new_text_extractor._crawl_directory("test_data", 3)
+    output = new_text_extractor._crawl_directory(os.getcwd() + "/tests/test_data", 3)
 
     top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
     mid_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
