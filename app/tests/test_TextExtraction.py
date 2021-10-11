@@ -1,5 +1,6 @@
 from app.TextExtraction import TextExtractor
 import re
+from hashlib import sha256
 import pytest
 
 # File Extraction
@@ -88,3 +89,15 @@ def test_contraction_expansion(new_text_extractor):
     generated_output = new_text_extractor._expand_contractions(test_input)
 
     assert expected_output == generated_output
+
+
+# Hashing
+def test_output_hashing(new_text_extractor):
+    # https://stackoverflow.com/questions/48613002/sha-256-hashing-in-python
+
+    string_to_hash = "This is a beautiful new string ready for hashing"
+    test_hash = sha256(string_to_hash.encode("utf-8")).hexdigest()
+
+    generated_hash = new_text_extractor._generate_hash(string_to_hash)
+
+    assert test_hash == generated_hash

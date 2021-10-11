@@ -101,3 +101,13 @@ class TextExtractor(object):
             - See here for implementation:
             - https://towardsdatascience.com/text-summarization-using-deep-neural-networks-e7ee7521d804
         """
+
+        return None
+
+    def _generate_hash(self, string_to_hash: str) -> int:
+        """
+        Given: A string
+        Return: a SHA256 hash based on said string
+        """
+
+        return None
