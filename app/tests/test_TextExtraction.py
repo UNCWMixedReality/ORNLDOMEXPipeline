@@ -55,6 +55,8 @@ def test_single_complex_pdf_file(new_text_extractor, expected_output):
 # File Discovery
 def test_directory_crawler_top_level(new_text_extractor):
     output = new_text_extractor._crawl_directory(os.getcwd() + "/tests/test_data", 1)
+    print(output)
+    print(os.getcwd() + "/tests/test_data")
 
     def _regex_search(pattern: str, output_list: list) -> bool:
         for path in output_list:
