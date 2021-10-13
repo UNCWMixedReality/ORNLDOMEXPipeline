@@ -1,4 +1,6 @@
 # ORNL Domex Pipeline
+[![Tests](https://github.com/UNCWMixedReality/ORNLDOMEXPipeline/actions/workflows/build.yml/badge.svg)](https://github.com/UNCWMixedReality/ORNLDOMEXPipeline/actions/workflows/build.yml)
+
 A python pipeline to allow the extraction of text from a variety of file types, and subsequent classification of the extracted text
 
 ### Initial development setup
