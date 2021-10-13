@@ -1,6 +1,8 @@
 # NOTE: Ensure you're using logging where it would be useful. The Log level is
 # declared in __main__, but stick to [info] for high level things "Extracted x amount of files"
 # and [debug] for things that will be helpful when stuff breaks, like all FileNotFound errors
+import os
+import glob
 
 
 class TextExtractor(object):
@@ -36,7 +38,22 @@ class TextExtractor(object):
               from ./deprecate/DocumentIngestion.py
         """
 
-        return None
+        # Check depth and valid parent directory
+        if depth == 0:
+            raise ValueError("Desired Depths should be 1 indexed")
+
+        if not os.path.exists(parent_directory):
+            raise FileNotFoundError("The specififed parent directory does not exist")
+
+        # Grab all of our paths
+        targets = self._crawl_directory(parent_directory, depth)
+
+        # Extract text from each
+        output_dict = {}
+        for file_path in targets:
+            output_dict[file_path] = self.extract_text_from_single_file(file_path)
+
+        return output_dict
 
     def hash_and_cache_output(self, output: str) -> tuple[bool, int]:
         """
@@ -90,7 +107,15 @@ class TextExtractor(object):
         Return: A list of all valid files in that directory down to the defined depth
         """
 
-        return None
+        # Generate our pattern
+        patterns = self._generate_glob_patterns(directory, depth)
+
+        # Grab a list of all the possible files
+        all_valid_paths = []
+        for file_type_pattern in patterns:
+            all_valid_paths = [*glob.glob(file_type_pattern), *all_valid_paths]
+
+        return all_valid_paths
 
     def _expand_contractions(self, contracted_text: str) -> str:
         """
@@ -111,3 +136,22 @@ class TextExtractor(object):
         """
 
         return None
+
+    def _generate_glob_patterns(self, parent_directory: str, depth: int) -> list:
+
+        while parent_directory[-1] in ("/", "\\"):
+            parent_directory = parent_directory[:-1]
+
+        if parent_directory[1] in [":"]:
+            # This is supposed to handle drive letters, but hasn't been needed
+            pass
+
+        elif parent_directory[0] not in ("/", "\\"):
+            parent_directory = "/" + parent_directory
+
+        glob_patterns = []
+        for ext in [".txt", ".docx", ".doc", ".pdf"]:
+            for current_depth in range(1, depth + 1):
+                glob_patterns.append(f'{parent_directory}{"/*" * current_depth}{ext}')
+
+        return glob_patterns

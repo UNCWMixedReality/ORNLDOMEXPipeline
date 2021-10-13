@@ -4,6 +4,6 @@ services:
   domex_pipeline:
     build: ./app
     container_name: domex_pipeline
-    command: python domex.py
+    command: pytest
     volumes: 
       - ./app/:/usr/src/app/

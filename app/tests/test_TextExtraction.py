@@ -55,33 +55,41 @@ def test_single_complex_pdf_file(new_text_extractor, expected_output):
 # File Discovery
 def test_directory_crawler_top_level(new_text_extractor):
     output = new_text_extractor._crawl_directory(os.getcwd() + "/tests/test_data", 1)
-    top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
-    bottom_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
 
-    assert len(top_level) == 1
-    assert len(bottom_level) == 0
+    def _regex_search(pattern: str, output_list: list) -> bool:
+        for path in output_list:
+            if re.search(pattern, path):
+                return True
+
+        return False
+
+    assert _regex_search(r"test_data/goldilocks.txt", output)
+    assert not _regex_search(r"test_data/level2/level3/bar.txt", output)
 
 
 def test_directory_crawler_bottom_level(new_text_extractor):
-    output = new_text_extractor._crawl_directory(os.getcwd() + "/tests/test_data", 3)
+    output = new_text_extractor._crawl_directory((os.getcwd() + "/tests/test_data"), 3)
 
-    top_level = re.findall(r"\S*test_data\/goldilocks\.txt", output)
-    mid_level = re.findall(r"\S*test_data\/level2\/foo\.txt", output)
-    bottom_level = re.findall(r"S*test_data\/level2\/level3\/bar\.txt")
+    def _regex_search(pattern: str, output_list: list) -> bool:
+        for path in output_list:
+            if re.search(pattern, path):
+                return True
 
-    assert len(top_level) == 1
-    assert len(mid_level) == 1
-    assert len(bottom_level) == 1
+        return False
+
+    assert _regex_search(r"test_data/goldilocks.txt", output)
+    assert _regex_search(r"test_data/level2/foo.txt", output)
+    assert _regex_search(r"test_data/level2/level3/bar.txt", output)
 
 
 def test_invalid_parent_directory(new_text_extractor):
     with pytest.raises(FileNotFoundError):
-        new_text_extractor._crawl_directory("/foo/bar", 1)
+        new_text_extractor.extract_text_from_all_files_in_directory("/foo/bar", 1)
 
 
 def test_invalid_depth(new_text_extractor):
     with pytest.raises(ValueError):
-        new_text_extractor._crawl_directory("test_data", 0)
+        new_text_extractor.extract_text_from_all_files_in_directory("test_data", 0)
 
 
 # Text Formatting
