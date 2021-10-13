@@ -34,4 +34,4 @@ jobs:
         black . --exclude="migrations|env"
     - name: Test with pytest
       run: |
-        pytest -p no:warnings --cov=.
+        pytest
