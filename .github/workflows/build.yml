@@ -1,16 +1,15 @@
 name: Test
 on:
   pull_request:
-  push: { branches: main, develop }
+  push: 
+    branches: 
+      - main
+      - develop
 
 jobs:
   test:
     name: Run test suite
     runs-on: ubuntu-latest
-    env:
-      COMPOSE_FILE: .ci/docker-compose.yml
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
 
     steps:
     - name: Checkout code
@@ -33,5 +32,7 @@ jobs:
       run: |
         black . --exclude="migrations|env"
     - name: Test with pytest
+      env:
+        APP_DIR: /home/runner/work/ORNLDOMEXPipeline/ORNLDOMEXPipeline/app
       run: |
         pytest

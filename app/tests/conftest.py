@@ -1,5 +1,6 @@
 import pytest
 from app.TextExtraction import TextExtractor
+import os
 
 
 @pytest.fixture(scope="function")
@@ -12,3 +13,15 @@ def expected_output():
 @pytest.fixture(scope="function")
 def new_text_extractor():
     return TextExtractor()
+
+
+@pytest.fixture()
+def app_directory():
+    current_dir = os.getcwd()
+
+    if current_dir.split("/")[2] == "runner":
+        return os.environ.get("APP_DIR")
+    elif current_dir.split("/")[-1] == ("DOMEXPipeline" or "ORNLDOMEXPipeline"):
+        return current_dir + "/app"
+    else:
+        return os.getcwd()
