@@ -19,7 +19,9 @@ def new_text_extractor():
 def app_directory():
     current_dir = os.getcwd()
 
-    if current_dir.split("/")[-1] == ("DOMEXPipeline" or "ORNLDOMEXPipeline"):
+    if current_dir.split("/")[2] == "runner":
+        return os.environ.get("APP_DIR")
+    elif current_dir.split("/")[-1] == ("DOMEXPipeline" or "ORNLDOMEXPipeline"):
         return current_dir + "/app"
     else:
         return os.getcwd()
