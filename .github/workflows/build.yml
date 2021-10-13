@@ -32,5 +32,7 @@ jobs:
       run: |
         black . --exclude="migrations|env"
     - name: Test with pytest
+      env:
+        APP_DIR: /home/runner/work/ORNLDOMEXPipeline/ORNLDOMEXPipeline/app
       run: |
         pytest
