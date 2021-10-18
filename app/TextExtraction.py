@@ -3,6 +3,9 @@
 # and [debug] for things that will be helpful when stuff breaks, like all FileNotFound errors
 import os
 import glob
+import hashlib
+import json
+import re
 
 
 class TextExtractor(object):
@@ -20,7 +23,40 @@ class TextExtractor(object):
             3. If the file type is supported, pass to appropriate method
             4. Return Results
         """
-        return None
+        methods = {
+            ".txt": self._extract_text_from_txt_file,
+            (".docx", ".doc"): self._extract_text_from_word_file,
+            ".pdf": self._extract_text_from_pdf_file
+        }
+
+        results = None
+        if os.path.exists(file_path):
+            for extension, func in methods.items():
+                if isinstance(extension, str):
+                    if file_path.endswith(extension):
+                        results = func(file_path)
+                        break
+                else:
+                    found = False
+                    for ext in extension:
+                        if file_path.endswith(ext):
+                            results = func(file_path)
+                            found = True
+                            break
+                    if found:
+                        break
+            else:
+                extensions = []
+                for extension in methods:
+                    if isinstance(extension, str):
+                        extensions.append(extension)
+                    else:
+                        for ext in extensions:
+                            extensions.append(ext)
+                raise ValueError(f"Unsupported extension. Supported file types are: {extensions}")
+        else:
+            raise FileNotFoundError(file_path)
+        return results.strip()
 
     def extract_text_from_all_files_in_directory(
         self, parent_directory: str, depth: int
@@ -126,16 +162,18 @@ class TextExtractor(object):
             - See here for implementation:
             - https://towardsdatascience.com/text-summarization-using-deep-neural-networks-e7ee7521d804
         """
+        with open('contractions.json', 'r') as f:
+            cList = json.load(f)
+        c_re = re.compile(f'({"|".join(cList.keys())})')
+        return c_re.sub(lambda match: cList[match.group(0)], contracted_text.lower())
 
-        return None
-
-    def _generate_hash(self, string_to_hash: str) -> int:
+    def _generate_hash(self, string_to_hash: str) -> str:
         """
         Given: A string
         Return: a SHA256 hash based on said string
         """
 
-        return None
+        return hashlib.sha256(string_to_hash.encode()).digest().hex()
 
     def _generate_glob_patterns(self, parent_directory: str, depth: int) -> list:
 
