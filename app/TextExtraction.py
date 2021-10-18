@@ -10,7 +10,18 @@ import re
 
 class TextExtractor(object):
     def __init__(self):
-        pass
+        self.methods = {
+            ".txt": self._extract_text_from_txt_file,
+            (".docx", ".doc"): self._extract_text_from_word_file,
+            ".pdf": self._extract_text_from_pdf_file
+        }
+        self.extensions = []
+        for extension in self.methods:
+            if isinstance(extension, str):
+                self.extensions.append(extension)
+            else:
+                for ext in extension:
+                    self.extensions.append(ext)
 
     # Public methods
     def extract_text_from_single_file(self, file_path: str) -> str:
@@ -23,15 +34,11 @@ class TextExtractor(object):
             3. If the file type is supported, pass to appropriate method
             4. Return Results
         """
-        methods = {
-            ".txt": self._extract_text_from_txt_file,
-            (".docx", ".doc"): self._extract_text_from_word_file,
-            ".pdf": self._extract_text_from_pdf_file
-        }
+
 
         results = None
         if os.path.exists(file_path):
-            for extension, func in methods.items():
+            for extension, func in self.methods.items():
                 if isinstance(extension, str):
                     if file_path.endswith(extension):
                         results = func(file_path)
@@ -46,14 +53,7 @@ class TextExtractor(object):
                     if found:
                         break
             else:
-                extensions = []
-                for extension in methods:
-                    if isinstance(extension, str):
-                        extensions.append(extension)
-                    else:
-                        for ext in extensions:
-                            extensions.append(ext)
-                raise ValueError(f"Unsupported extension. Supported file types are: {extensions}")
+                raise ValueError(f"Unsupported extension. Supported file types are: {self.extensions}")
         else:
             raise FileNotFoundError(file_path)
         return results.strip()
@@ -188,7 +188,7 @@ class TextExtractor(object):
             parent_directory = "/" + parent_directory
 
         glob_patterns = []
-        for ext in [".txt", ".docx", ".doc", ".pdf"]:
+        for ext in self.extensions:
             for current_depth in range(1, depth + 1):
                 glob_patterns.append(f'{parent_directory}{"/*" * current_depth}{ext}')
 
