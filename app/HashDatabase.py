@@ -1,3 +1,6 @@
+import sqlite3
+
+
 class HashDatabase(object):
     def __init__(self):
         """
@@ -7,24 +10,25 @@ class HashDatabase(object):
         If using postgres, use this function to connect to the table and store
         that connection
         """
-        pass
+        self.con = sqlite3.connect("internal_db.db")
+        self.cache_table_name = "cache_db"
+        self._setup_table()
 
     # Public Methods
-    def check_for_existing_hash(self, hash: int) -> tuple[bool, str]:
+    def check_for_existing_hash(self, hash: str) -> bool:
         """
         Given: A hash value
         Return: A bool representing whether this hash existed already
 
         Steps:
-            - Perform a lookup to see if the has exists
-            - If hash exists, return true and the path to that hashs results
-            - If hash doesn't exists, create new record and file for results
-            - Return false and None
+            - Perform a lookup to see if the hash exists
+            - If hash exists, return true
+            - If hash doesn't exist, return false
         """
 
-        return (None, None)
+        return False
 
-    def add_new_results_to_hash(self, hash: int, results: str):
+    def add_new_results_to_hash(self, hash: str, results: str):
         """
         Given: A hash value and results in an array
 
@@ -37,15 +41,33 @@ class HashDatabase(object):
         """
         pass
 
-    # private methods
-    def _check_for_results_directory(self, parent_path: str):
+    def get_nouns_from_hash(self, hash: str) -> dict:
         """
-        Given: a parent directory
+        Given: a hash value
+        Return: a dictionary containing all of the identfied nouns
 
         Steps:
-            - check if a "DOMEXResults" directory exists
-            - if so, pass
-            - if not, generate a new DOMEXResults directory as a child of the
-            given parent directory
+            - Accept a hash value
+            - Search for a noun result in the databse
+            - return the result
         """
         pass
+
+    # private methods
+
+    def _setup_table(self):
+        cursor = self._return_new_cursor()
+
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS cache_db (
+            hash CHARACTER(64) NOT NULL PRIMARY KEY,
+            nouns TEXT)"""
+        )
+
+    def _return_new_cursor(self) -> sqlite3.Cursor:
+        """
+        Returns a new db cursor for executing queries
+
+        Make sure to clean up after yourself. When you're done executing queries, run cursor.close()
+        """
+        return self.con.cursor()
