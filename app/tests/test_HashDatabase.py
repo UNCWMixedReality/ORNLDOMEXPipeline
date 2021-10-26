@@ -76,8 +76,8 @@ def test_get_data_that_exists_by_hash(
     assert db.get_nouns_from_hash(hash_1) == sample_data[1][1]
 
 
-def test_insert_data(test_db, sample_data, create_hash, retrieve_nouns):
-    db = test_db
+def test_insert_data(test_database, sample_data, create_hash, retrieve_nouns):
+    db = test_database
 
     hash_0 = create_hash(sample_data[0][0])
     hash_1 = create_hash(sample_data[1][0])
