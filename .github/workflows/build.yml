@@ -36,3 +36,38 @@ jobs:
         APP_DIR: /home/runner/work/ORNLDOMEXPipeline/ORNLDOMEXPipeline/app
       run: |
         pytest
+    - name: Create file status_job02.txt and write the job status into it
+      if: always()
+      run: |
+        echo ${{ job.status }} > testing_phase.txt
+    - name: Upload file testing_phase.txt as an artifact
+      if: always()
+      uses: actions/upload-artifact@v1
+      with:
+        name: pass_test_status
+        path: testing_phase.txt
+  notify:
+    name: Notify on succesful build
+    needs: test
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifact pass_test_status
+      uses: actions/download-artifact@v1
+      with:
+        name: pass_test_status
+
+    - name: Set the statuses of Test job as output parameters
+      id: set_outputs
+      run: |
+        echo "::set-output name=status_test::$(<pass_test_status/testing_phase.txt)"
+    - uses: actions/checkout@v2
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_COLOR: ${{ steps.set_outputs.outputs.status_test }}
+        SLACK_ICON: ${{ secrets.SLACK_ICON }}
+        SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
+        SLACK_TITLE: Git commit message
+        SLACK_FOOTER: Most recent git activity, Powered By rtCamp's GitHub Actions Library
