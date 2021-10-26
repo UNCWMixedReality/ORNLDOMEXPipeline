@@ -2,7 +2,7 @@ import sqlite3
 
 
 class HashDatabase(object):
-    def __init__(self):
+    def __init__(self, db_path="internal_db.db"):
         """
         Notes: If using sqlite, use this init function to check for a table, and
         initialize if it doesn't exist
@@ -10,7 +10,7 @@ class HashDatabase(object):
         If using postgres, use this function to connect to the table and store
         that connection
         """
-        self.con = sqlite3.connect("internal_db.db")
+        self.con = sqlite3.connect(db_path)
         self.cache_table_name = "cache_db"
         self._setup_table()
 
@@ -24,9 +24,10 @@ class HashDatabase(object):
             - Perform a lookup to see if the hash exists
             - If hash exists, return true
             - If hash doesn't exist, return false
+            - Throw a ValueError if the hash isn't a string
+            - Throw a ValueError if the length of the hash is not 64
         """
-
-        return False
+        pass
 
     def add_new_results_to_hash(self, hash: str, results: str):
         """
@@ -41,7 +42,7 @@ class HashDatabase(object):
         """
         pass
 
-    def get_nouns_from_hash(self, hash: str) -> dict:
+    def get_nouns_from_hash(self, hash: str) -> str:
         """
         Given: a hash value
         Return: a dictionary containing all of the identfied nouns

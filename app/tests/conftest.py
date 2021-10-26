@@ -1,6 +1,8 @@
 import pytest
 from app.TextExtraction import TextExtractor
 import os
+import hashlib
+from app.HashDatabase import HashDatabase
 
 
 @pytest.fixture(scope="function")
@@ -25,3 +27,74 @@ def app_directory():
         return current_dir + "/app"
     else:
         return os.getcwd()
+
+
+@pytest.fixture()
+def create_hash():
+    def _create_hash(output_text):
+        return hashlib.sha256(output_text.encode()).digest().hex()
+
+    return _create_hash
+
+
+@pytest.fixture(scope="function")
+def test_database():
+    new_db = HashDatabase("test_db.db")
+    yield new_db
+    new_db = None
+    os.remove("test_db.db")
+
+
+@pytest.fixture(scope="function")
+def test_populated_database():
+    data = [
+        (
+            "last thursday i bought a new macbook. i went to the apple store to buy it. A guy named steve sold it to me",  # noqa: E501
+            '{"things": ["macbook"], "people": ["i", "steve"], "date": ["thursday"], "location": ["apple store"]}',  # noqa: E501
+        ),
+        (
+            "for lunch today i had chic-fil-a. i got a chicken sandwich. captain cathy made it for me",  # noqa: E501
+            '{"things": ["chicken sandwich"], "organizations": ["chic-fil-a"], "people": ["i", "cathy"], "titles": ["captain"]}',  # noqa: E501
+        ),
+    ]
+    new_db = HashDatabase("test_db.db")
+    cursor = new_db._return_new_cursor()
+    for data_point in data:
+        tmp_hash = hashlib.sha256(data_point[0].encode()).digest().hex()
+        cursor.execute(
+            "INSERT INTO cache_db VALUES (?,?);",
+            (
+                tmp_hash,
+                data_point[1],
+            ),
+        )
+    cursor.close()
+    yield new_db
+    new_db = None
+    os.remove("test_db.db")
+
+
+@pytest.fixture(scope="function")
+def sample_data():
+    data = [
+        (
+            "last thursday i bought a new macbook. i went to the apple store to buy it. A guy named steve sold it to me",  # noqa: E501
+            '{"things": ["macbook"], "people": ["i", "steve"], "date": ["thursday"], "location": ["apple store"]}',  # noqa: E501
+        ),
+        (
+            "for lunch today i had chic-fil-a. i got a chicken sandwich. captain cathy made it for me",  # noqa: E501
+            '{"things": ["chicken sandwich"], "organizations": ["chic-fil-a"], "people": ["i", "cathy"], "titles": ["captain"]}',  # noqa: E501
+        ),
+    ]
+
+    return data
+
+
+@pytest.fixture(scope="function")
+def retrieve_nouns():
+    def _retrieve_nouns(database, hash):
+        db_cursor = database._return_new_cursor()
+        db_cursor.execute("SELECT nouns FROM cache_db WHERE hash = ?", (hash,))
+        return db_cursor.fetchone()[0]
+
+    return _retrieve_nouns
