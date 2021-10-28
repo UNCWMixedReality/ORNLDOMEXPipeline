@@ -39,10 +39,11 @@ def create_hash():
 
 @pytest.fixture(scope="function")
 def test_database():
-    new_db = HashDatabase("test_db.db")
+    new_db = HashDatabase(":memory:")
     yield new_db
-    new_db = None
-    os.remove("test_db.db")
+    cursor = new_db._return_new_cursor()
+    cursor.execute("drop table cache_db")
+    cursor.close()
 
 
 @pytest.fixture(scope="function")
@@ -57,7 +58,7 @@ def test_populated_database():
             '{"things": ["chicken sandwich"], "organizations": ["chic-fil-a"], "people": ["i", "cathy"], "titles": ["captain"]}',  # noqa: E501
         ),
     ]
-    new_db = HashDatabase("test_db.db")
+    new_db = HashDatabase(":memory:")
     cursor = new_db._return_new_cursor()
     for data_point in data:
         tmp_hash = hashlib.sha256(data_point[0].encode()).digest().hex()
@@ -70,8 +71,9 @@ def test_populated_database():
         )
     cursor.close()
     yield new_db
-    new_db = None
-    os.remove("test_db.db")
+    cursor = new_db._return_new_cursor()
+    cursor.execute("drop table cache_db")
+    cursor.close()
 
 
 @pytest.fixture(scope="function")

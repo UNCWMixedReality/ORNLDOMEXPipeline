@@ -1,4 +1,5 @@
 import pytest
+from app.HashDatabase import HashDatabase
 
 
 def test_databse_table_creation(test_database):
@@ -50,8 +51,8 @@ def test_search_database_for_hash_that_doesnt_exist(
     hash_0 = create_hash(sample_data[0][0])
     hash_1 = create_hash(sample_data[1][0])
 
-    assert not db.check_for_existing_hash(hash_0)
-    assert not db.check_for_existing_hash(hash_1)
+    assert db.check_for_existing_hash(hash_0) == False  # noqa: E712
+    assert db.check_for_existing_hash(hash_1) == False  # noqa: E712
 
 
 def test_search_database_for_hash_that_does_exist(

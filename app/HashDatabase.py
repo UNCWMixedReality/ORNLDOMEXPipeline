@@ -29,23 +29,26 @@ class HashDatabase(object):
         """
         pass
 
-    def add_new_results_to_hash(self, hash: str, results: str):
+    def add_new_results_to_hash(self, hash: str, nouns: str, update=False):
         """
         Given: A hash value and results in an array
 
-        Steps:
-            - Perform a lookup to ensure a file for that hash exists
-            - If file doesn't exists raise an exception
-            - If file does exists and contains content raise and exception and
-            log everything (previous content, new content, hash, datetime)
-            - If hash exists and file is empty, store results in file
+        Steps if update == false:
+        1. pass hash to check_for_existing_hash
+        2. if hash exists, raise a ValueError
+        3. if hash doesn't exist, insert nouns with an insert statement
+
+        Steps if update == True:
+        1. pass hash to check_for_existing_hash
+        2. if hash exists, update the nouns for that hash with an update statement
+        3. if hash does not exist, insert nouns for that hash with an insert statement
         """
         pass
 
     def get_nouns_from_hash(self, hash: str) -> str:
         """
         Given: a hash value
-        Return: a dictionary containing all of the identfied nouns
+        Return: a string representation of a dictionary containing all of the identfied nouns
 
         Steps:
             - Accept a hash value

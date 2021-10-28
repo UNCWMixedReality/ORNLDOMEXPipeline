@@ -98,7 +98,7 @@ def test_invalid_depth(new_text_extractor):
 
 # Text Formatting
 def test_contraction_expansion(new_text_extractor):
-    expected_output = "I cannot wait for the day that coffee is not a stigma. I will not go a day without it."
+    expected_output = "i cannot wait for the day that coffee is not a stigma. i will not go a day without it."
     test_input = "I can't wait for the day that coffee isn't a stigma. I won't go a day without it."
 
     generated_output = new_text_extractor._expand_contractions(test_input)
