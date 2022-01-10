@@ -4,6 +4,6 @@ services:
   domex_pipeline:
     build: ./app
     container_name: domex_pipeline
-    command: pytest
+    command: python TextClassification.py
     volumes: 
       - ./app/:/usr/src/app/
