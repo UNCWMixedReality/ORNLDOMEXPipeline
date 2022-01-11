@@ -1,6 +1,34 @@
 import pytest
 
 
+# Data Point Tests
+def test_data_point_equality_on_datapoint_with_no_confidence_score(create_datapoint):
+    tomato = create_datapoint("Tomato", "Vegetable", confidence_score=None)
+    spinach = create_datapoint("Spinach", "Vegetable")
+
+    assert tomato != spinach
+
+
+def test_data_point_equality_on_datapoint_with_valid_confidence_scores(
+    create_datapoint,
+):
+    tomato = create_datapoint("Tomato", "Vegetable", confidence_score=0.5)
+    spinach = create_datapoint("Spinach", "Vegetable", confidence_score=0.5)
+
+    assert tomato == spinach
+
+
+def test_data_point_sorting_potential(create_datapoint):
+    tomato = create_datapoint("Tomato", "Vegetable", confidence_score=0.75)
+    spinach = create_datapoint("Spinach", "Vegetable", confidence_score=0.5)
+    squash = create_datapoint("Squash", "Vegetable", confidence_score=0.25)
+
+    garden = [spinach, squash, tomato]
+
+    assert sorted(garden, reverse=True)[0] == tomato
+    assert sorted(garden, reverse=True)[2] == squash
+
+
 def test_addition_of_a_new_point(new_classified_text, create_datapoint):
     results = new_classified_text
     assert len(results.points) == 0
@@ -42,7 +70,7 @@ def test_retrieval_of_datapoints_by_existing_categories(
 
     assert len(results.categories) == 2
     assert len(results.points) == 3
-    assert len(results.grab_all_points_by_category("Vegetable")) == 2
+    assert len(results.get_all_points_by_category("Vegetable")) == 2
 
 
 def test_retrieval_of_datapoints_by_nonexistent_categories(
@@ -60,7 +88,7 @@ def test_retrieval_of_datapoints_by_nonexistent_categories(
     results.add_point(basil)
 
     assert len(results.categories) == 2
-    assert len(results.grab_all_points_by_category("Fruit")) == 0
+    assert len(results.get_all_points_by_category("Fruit")) == 0
 
 
 def test_retrieval_of_datapoints_by_existing_subcategories(
@@ -80,8 +108,8 @@ def test_retrieval_of_datapoints_by_existing_subcategories(
     results.add_point(basil)
 
     assert len(results.categories) == 2
-    assert len(results.grab_all_points_by_category("Vegetable")) == 3
-    assert len(results.grab_all_points_by_category("Vegetable", "Determinate")) == 1
+    assert len(results.get_all_points_by_category("Vegetable")) == 3
+    assert len(results.get_all_points_by_category("Vegetable", "Determinate")) == 1
 
 
 def test_retrieval_of_datapoints_by_nonexistent_subcategories(
@@ -101,7 +129,7 @@ def test_retrieval_of_datapoints_by_nonexistent_subcategories(
     results.add_point(basil)
 
     assert len(results.categories) == 2
-    assert len(results.grab_all_points_by_category("Vegetable")) == 3
-    assert len(results.grab_all_points_by_category("Fruit")) == 0
-    assert len(results.grab_all_points_by_category("Vegetable", "Determinate")) == 1
-    assert len(results.grab_all_points_by_category("Vegetable", "Hydra")) == 0
+    assert len(results.get_all_points_by_category("Vegetable")) == 3
+    assert len(results.get_all_points_by_category("Fruit")) == 0
+    assert len(results.get_all_points_by_category("Vegetable", "Determinate")) == 1
+    assert len(results.get_all_points_by_category("Vegetable", "Hydra")) == 0

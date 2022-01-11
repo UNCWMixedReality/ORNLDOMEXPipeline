@@ -1,11 +1,13 @@
 # NOTE: Ensure you're using logging where it would be useful. The Log level is
 # declared in __main__, but stick to [info] for high level things "Extracted x amount of files"
 # and [debug] for things that will be helpful when stuff breaks, like all FileNotFound errors
-from app.ClassifiedText import DataPoint, ClassifiedText
-from azure.ai.textanalytics import TextAnalyticsClient, DocumentError
-from azure.core.credentials import AzureKeyCredential
 import os
 import sqlite3
+
+from azure.ai.textanalytics import DocumentError, TextAnalyticsClient
+from azure.core.credentials import AzureKeyCredential
+
+from app.ClassifiedText import ClassifiedText, DataPoint
 
 
 class TextClassifier(object):
@@ -33,8 +35,7 @@ class TextClassifier(object):
             document = [text]
             result = self.azure_channel.recognize_entities(documents=document)[0]
 
-            for entity in result:
-                print(entity)
+            for entity in result.entities:
                 new_datapoint = DataPoint(
                     noun=entity.text,
                     category=entity.category,
@@ -44,29 +45,12 @@ class TextClassifier(object):
                     offset=entity.offset,
                 )
 
-                working_classified_text.add_point(new_datapoint)
-
-            for entity in result.entities:
-                print(
-                    "\tText: \t",
-                    entity.text,
-                    "\tCategory: \t",
-                    entity.category,
-                    "\tSubCategory: \t",
-                    entity.subcategory,
-                    "\n\tConfidence Score: \t",
-                    round(entity.confidence_score, 2),
-                    "\tLength: \t",
-                    entity.length,
-                    "\tOffset: \t",
-                    entity.offset,
-                    "\n",
-                )
+            working_classified_text.add_point(new_datapoint)
 
         except Exception as err:
             print(
                 f"Encountered exception while classifying the document beginning in {text[:100]}.\
-                The error is as follows: {err.with_traceback.__str__}"
+                The error is as follows: {err}"
             )
             return None
 
@@ -105,5 +89,8 @@ class TextClassifier(object):
         )
 
 
-test = TextClassifier()
-test._classify_with_azure("hi")
+if __name__ == "__main__":
+    test = TextClassifier(azure=True)
+    test.classify_single_text_element(
+        "My name is Seth. I really like Apple. I'd like to work for them one day."
+    )

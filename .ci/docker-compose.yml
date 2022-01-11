@@ -4,7 +4,7 @@ services:
   domex_pipeline:
     build: ../app
     image: sethangell/ornl-domex-pipeline
-    command: pytest -vv
+    command: pytest
     container_name: domex_pipeline
     volumes: 
       - ../app/:/usr/src/app/

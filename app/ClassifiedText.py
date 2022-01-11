@@ -1,5 +1,5 @@
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -12,6 +12,24 @@ class DataPoint:
     confidence_score: float
     length: int
     offset: int
+
+    # Sort numerically by confidence score
+    #   Use Case: Get a sorted list of most confident to least confident results
+    def __eq__(self, other):
+        if self.confidence_score is None:
+            return False
+        elif other.confidence_score is None:
+            return False
+        else:
+            return self.confidence_score == other.confidence_score
+
+    def __gt__(self, other):
+        if self.confidence_score is None:
+            return False
+        elif other.confidence_score is None:
+            return False
+        else:
+            return self.confidence_score > other.confidence_score
 
 
 class ClassifiedText(object):
@@ -27,7 +45,7 @@ class ClassifiedText(object):
 
         self.points.append(point)
 
-    def grab_all_points_by_category(
+    def get_all_points_by_category(
         self, category: str, subcategory: Optional[str] = None
     ):
         valid_points = [point for point in self.points if point.category == category]
