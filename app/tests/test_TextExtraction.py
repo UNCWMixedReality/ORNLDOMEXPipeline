@@ -1,55 +1,58 @@
-from app.TextExtraction import TextExtractor
-import re
 import os
+import re
 from hashlib import sha256
+
 import pytest
 
+from app.TextExtraction import TextExtractor
+
+
 # File Extraction
-# def test_valid_txt_file_path(new_text_extractor, expected_output, app_directory):
-#     new_output = new_text_extractor.extract_text_from_single_file(
-#         app_directory + "/tests/test_data/goldilocks.txt"
-#     )
+def test_valid_txt_file_path(new_text_extractor, expected_output, app_directory):
+    new_output = new_text_extractor.extract_text_from_single_file(
+        app_directory + "/tests/test_data/goldilocks.txt"
+    )
 
-#     assert new_output == expected_output
-
-
-# def test_invalid_txt_file_path(new_text_extractor):
-#     with pytest.raises(FileNotFoundError):
-#         new_text_extractor.extract_text_from_single_file("/foo/bar")
+    assert new_output == expected_output
 
 
-# def test_single_simple_docx_file(new_text_extractor, expected_output, app_directory):
-#     new_output = new_text_extractor.extract_text_from_single_file(
-#         app_directory + "/tests/test_data/goldilocks_only.docx"
-#     )
-
-#     assert new_output == expected_output
+def test_invalid_txt_file_path(new_text_extractor):
+    with pytest.raises(FileNotFoundError):
+        new_text_extractor.extract_text_from_single_file("/foo/bar")
 
 
-# def test_single_simple_doc_file(new_text_extractor, expected_output, app_directory):
-#     new_output = new_text_extractor.extract_text_from_single_file(
-#         app_directory + "/tests/test_data/goldilocks_only.doc"
-#     )
+def test_single_simple_docx_file(new_text_extractor, expected_output, app_directory):
+    new_output = new_text_extractor.extract_text_from_single_file(
+        app_directory + "/tests/test_data/goldilocks_only.docx"
+    )
 
-#     assert new_output == expected_output
-
-
-# def test_single_complex_docx_file(new_text_extractor, expected_output, app_directory):
-#     new_output = new_text_extractor.extract_text_from_single_file(
-#         app_directory
-#         + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.docx"
-#     )
-
-#     assert new_output == expected_output
+    assert new_output[:100] == expected_output[:100]
 
 
-# def test_single_complex_pdf_file(new_text_extractor, expected_output, app_directory):
-#     new_output = new_text_extractor.extract_text_from_single_file(
-#         app_directory
-#         + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.pdf"
-#     )
+def test_single_simple_doc_file(new_text_extractor, expected_output, app_directory):
+    new_output = new_text_extractor.extract_text_from_single_file(
+        app_directory + "/tests/test_data/goldilocks_only.doc"
+    )
 
-#     assert new_output == expected_output
+    assert new_output[:50] == expected_output[:50]
+
+
+def test_single_complex_docx_file(new_text_extractor, expected_output, app_directory):
+    new_output = new_text_extractor.extract_text_from_single_file(
+        app_directory
+        + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.docx"
+    )
+
+    assert new_output[:100] == expected_output[:100]
+
+
+def test_single_complex_pdf_file(new_text_extractor, expected_output, app_directory):
+    new_output = new_text_extractor.extract_text_from_single_file(
+        app_directory
+        + "/tests/test_data/goldilocks_tables_and_photo_and_messy_formatting.pdf"
+    )
+
+    assert new_output[:100] == expected_output[:100]
 
 
 # File Discovery
@@ -116,3 +119,14 @@ def test_output_hashing(new_text_extractor):
     generated_hash = new_text_extractor._generate_hash(string_to_hash)
 
     assert test_hash == generated_hash
+
+
+def test_normalize_output(new_text_extractor):
+    sample_text = (
+        "       This is\t some really strange \n\n\n\n\r\ttext                  "
+    )
+    expected_output = "This is some really strange text"
+
+    generated_output = new_text_extractor._normalize_output(sample_text)
+
+    assert expected_output == generated_output

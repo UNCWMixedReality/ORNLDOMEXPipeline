@@ -6,6 +6,15 @@ import glob
 import hashlib
 import json
 import re
+import shutil
+from typing import Dict
+import textract
+from zipfile import ZipInfo
+from zipfile import ZipFile as zp
+from shutil import rmtree
+
+# Module Level Vars
+MAX_ZIP_SIZE = 4 * 1000 * 1000
 
 
 class TextExtractor(object):
@@ -13,9 +22,9 @@ class TextExtractor(object):
         self.methods = {
             ".txt": self._extract_text_from_txt_file,
             (".docx", ".doc"): self._extract_text_from_word_file,
-            ".pdf": self._extract_text_from_pdf_file
+            ".pdf": self._extract_text_from_pdf_file,
         }
-        self.extensions = []
+        self.extensions = [".txt", ".docx", ".doc", ".pdf"]
         for extension in self.methods:
             if isinstance(extension, str):
                 self.extensions.append(extension)
@@ -35,7 +44,6 @@ class TextExtractor(object):
             4. Return Results
         """
 
-
         results = None
         if os.path.exists(file_path):
             for extension, func in self.methods.items():
@@ -53,7 +61,9 @@ class TextExtractor(object):
                     if found:
                         break
             else:
-                raise ValueError(f"Unsupported extension. Supported file types are: {self.extensions}")
+                raise ValueError(
+                    f"Unsupported extension. Supported file types are: {self.extensions}"
+                )
         else:
             raise FileNotFoundError(file_path)
         return results.strip()
@@ -79,7 +89,7 @@ class TextExtractor(object):
             raise ValueError("Desired Depths should be 1 indexed")
 
         if not os.path.exists(parent_directory):
-            raise FileNotFoundError("The specififed parent directory does not exist")
+            raise FileNotFoundError("The specified parent directory does not exist")
 
         # Grab all of our paths
         targets = self._crawl_directory(parent_directory, depth)
@@ -91,9 +101,60 @@ class TextExtractor(object):
 
         return output_dict
 
+    def extract_text_from_a_zip_directory(self, zip_path: str, depth=None) -> Dict:
+        """
+        Given: a file path to a zip directory
+        Return: A dictionary containing all data within the directory
+
+        Steps:
+            - Check the uncompressed size of the directory to avoid zip-bombs
+            - Extract the directory a temporary location
+            - Find the maximum depth
+            - Pass temporary location to self.extract_all_files_from_directory
+            - Delete temporary location
+            - Return values to caller
+
+        Notes:
+            - Size check only really works for very basic zip bombs and naive approaches.
+            Would flounder under any sort of pressure. This should not be a trusted as a
+            true last line of defense. Don't run this outside of a resource-capped container
+        """
+
+        if not os.path.exists(zip_path):
+            raise FileNotFoundError("The specified zip path does not exist")
+
+        working_zip = zp(zip_path, "r")
+        working_zip.testzip()
+
+        # check for potential overflow
+        file_info = working_zip.infolist()
+
+        file_sizes = [t_file.file_size / 1000 for t_file in file_info]
+
+        if sum(file_sizes) > MAX_ZIP_SIZE:
+            raise RuntimeError(
+                f"Uncompressed Zip file would exceed maximum directory size of {MAX_ZIP_SIZE / 1000 / 1000}GB."
+            )
+
+        # create a temp directory for peace of mind on deletion later
+        #   - Happy to let Errors bubble to top since this will be run as a job
+        os.makedirs("temp_file_location", exists_ok=False)
+
+        working_zip.extractall(path="temp_file_location")
+
+        depth = self._get_depth("temp_file_location")
+
+        output = self.extract_text_from_all_files_in_directory(
+            "temp_file_location", depth
+        )
+
+        shutil.rmtree("temp_file_location")
+
+        return output
+
     def hash_and_cache_output(self, output: str) -> tuple[bool, int]:
         """
-        Given: A file path and an output strung
+        Given: A file path and an output string
         Return: A boolean representing whether this has existed already or not
 
         Steps:
@@ -108,8 +169,14 @@ class TextExtractor(object):
         Given: A .txt file path
         Return: All lines in a string
         """
+        output = None
 
-        return None
+        with open(file_path, "r") as ifile:
+            output = ifile.readlines()
+
+        output = "".join(output)
+
+        return self._normalize_output(output)
 
     def _extract_text_from_word_file(self, file_path: str) -> str:
         """
@@ -123,7 +190,12 @@ class TextExtractor(object):
             - Feel free to split into multiple helper methods if necessary
         """
 
-        return None
+        output = None
+
+        output = textract.process(file_path, encoding="ascii")
+        output = output.decode("utf8")
+
+        return self._normalize_output(output)
 
     def _extract_text_from_pdf_file(self, file_path: str) -> str:
         """
@@ -135,7 +207,21 @@ class TextExtractor(object):
             - Table data can also be ignored
         """
 
-        return None
+        output = None
+
+        output = textract.process(file_path, encoding="ascii")
+        output = output.decode("utf8")
+
+        return self._normalize_output(output)
+
+    def _normalize_output(self, output: str) -> str:
+        targets = ["\n", "\t", "\r", "'\n'"]
+
+        output = output.strip()
+        for t in targets:
+            output = output.replace(t, "")
+
+        return output
 
     def _crawl_directory(self, directory: str, depth: int) -> list:
         """
@@ -162,7 +248,7 @@ class TextExtractor(object):
             - See here for implementation:
             - https://towardsdatascience.com/text-summarization-using-deep-neural-networks-e7ee7521d804
         """
-        with open('contractions.json', 'r') as f:
+        with open("contractions.json", "r") as f:
             cList = json.load(f)
         c_re = re.compile(f'({"|".join(cList.keys())})')
         return c_re.sub(lambda match: cList[match.group(0)], contracted_text.lower())
@@ -193,3 +279,16 @@ class TextExtractor(object):
                 glob_patterns.append(f'{parent_directory}{"/*" * current_depth}{ext}')
 
         return glob_patterns
+
+    def _get_depth(self, path, depth=0):
+        """
+        Recursively derive the maximum depth of a given directory
+        Lifted From: https://stackoverflow.com/a/46921890
+        """
+        if not os.path.isdir(path):
+            return depth
+        maxdepth = depth
+        for entry in os.listdir(path):
+            fullpath = os.path.join(path, entry)
+            maxdepth = max(maxdepth, self._get_depth(fullpath, depth + 1))
+        return maxdepth
