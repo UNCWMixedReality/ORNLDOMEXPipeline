@@ -1,11 +1,10 @@
-import os
 import logging
+import os
 from operator import itemgetter
 
 import nltk
-from textblob import TextBlob
-
 from DocumentIngestion import extract_all_data_from_a_directory
+from textblob import TextBlob
 
 # Import models
 nltk.download("brown")

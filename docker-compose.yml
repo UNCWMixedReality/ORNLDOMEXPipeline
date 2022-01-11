@@ -4,6 +4,6 @@ services:
   domex_pipeline:
     build: ./app
     container_name: domex_pipeline
-    command: python TextClassification.py
+    command: pytest tests/test_HashDatabase.py
     volumes: 
       - ./app/:/usr/src/app/

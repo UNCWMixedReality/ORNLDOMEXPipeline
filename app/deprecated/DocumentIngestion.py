@@ -1,7 +1,7 @@
 import glob
+import logging
 import os
 import platform
-import logging
 
 
 def top_n_levels_expression(

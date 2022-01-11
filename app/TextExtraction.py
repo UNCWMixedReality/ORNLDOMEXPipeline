@@ -1,17 +1,18 @@
 # NOTE: Ensure you're using logging where it would be useful. The Log level is
 # declared in __main__, but stick to [info] for high level things "Extracted x amount of files"
 # and [debug] for things that will be helpful when stuff breaks, like all FileNotFound errors
-import os
 import glob
 import hashlib
 import json
+import os
 import re
 import shutil
-from typing import Dict
-import textract
-from zipfile import ZipInfo
-from zipfile import ZipFile as zp
 from shutil import rmtree
+from typing import Dict
+from zipfile import ZipFile as zp
+from zipfile import ZipInfo
+
+import textract
 
 # Module Level Vars
 MAX_ZIP_SIZE = 4 * 1000 * 1000
