@@ -1,8 +1,10 @@
-from app.TextExtraction import TextExtractor
-import re
 import os
+import re
 from hashlib import sha256
+
 import pytest
+
+from app.TextExtraction import TextExtractor
 
 
 # File Extraction
