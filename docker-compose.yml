@@ -4,6 +4,6 @@ services:
   domex_pipeline:
     build: ./app
     container_name: domex_pipeline
-    command: pytest tests/test_HashDatabase.py
+    command: pytest
     volumes: 
       - ./app/:/usr/src/app/
