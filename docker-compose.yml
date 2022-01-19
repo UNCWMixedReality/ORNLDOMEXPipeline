@@ -1,9 +1,19 @@
 version: '3.8'
 
 services:
-  domex_pipeline:
-    build: ./app
-    container_name: domex_pipeline
-    command: pytest
+  redis:
+    image: redis:6.2.6-alpine
+    container_name: celery_broker
+  noun_extraction_api:
+    build: .
+    container_name: api
+    command: > 
+      sh -c "celery -A NounExtraction.async_extraction.celery worker &&
+            python wsgi.py"
     volumes: 
       - ./app/:/usr/src/app/
+      - ./api/:/usr/src/api/
+    ports:
+      - 5555:5000
+    depends_on:
+      - redis
