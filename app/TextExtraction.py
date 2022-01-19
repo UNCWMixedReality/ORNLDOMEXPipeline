@@ -24,6 +24,7 @@ class TextExtractor(object):
             ".txt": self._extract_text_from_txt_file,
             (".docx", ".doc"): self._extract_text_from_word_file,
             ".pdf": self._extract_text_from_pdf_file,
+            ".zip": self.extract_text_from_a_zip_directory,
         }
         self.extensions = [".txt", ".docx", ".doc", ".pdf"]
         for extension in self.methods:
@@ -38,11 +39,12 @@ class TextExtractor(object):
         """
         Given: A file path
         Return: A String containing all extracted text
+
         Steps:
-            1. Test to ensure path is valid
-            2. Determine which file type has been received
-            3. If the file type is supported, pass to appropriate method
-            4. Return Results
+        1. Test to ensure path is valid
+        2. Determine which file type has been received
+        3. If the file type is supported, pass to appropriate method
+        4. Return Results
         """
 
         results = None
@@ -98,7 +100,12 @@ class TextExtractor(object):
         # Extract text from each
         output_dict = {}
         for file_path in targets:
-            output_dict[file_path] = self.extract_text_from_single_file(file_path)
+            if file_path.split(".")[-1].lower() == "zip":
+                # NOTE: This is destructive, so if a key is already defined outside of the zip
+                # it will be overwritten by a key representation in this returned dict
+                output_dict.update(self.extract_text_from_a_zip_directory(file_path))
+            else:
+                output_dict[file_path] = self.extract_text_from_single_file(file_path)
 
         return output_dict
 
@@ -152,17 +159,6 @@ class TextExtractor(object):
         shutil.rmtree("temp_file_location")
 
         return output
-
-    def hash_and_cache_output(self, output: str) -> tuple[bool, int]:
-        """
-        Given: A file path and an output string
-        Return: A boolean representing whether this has existed already or not
-
-        Steps:
-            - Hash the output
-            - Pass hash and output to database object to check if hash exists
-            - Return the output from the database object
-        """
 
     # Private methods
     def _extract_text_from_txt_file(self, file_path: str) -> str:
@@ -254,7 +250,8 @@ class TextExtractor(object):
         c_re = re.compile(f'({"|".join(cList.keys())})')
         return c_re.sub(lambda match: cList[match.group(0)], contracted_text.lower())
 
-    def _generate_hash(self, string_to_hash: str) -> str:
+    @staticmethod
+    def _generate_hash(string_to_hash: str) -> str:
         """
         Given: A string
         Return: a SHA256 hash based on said string

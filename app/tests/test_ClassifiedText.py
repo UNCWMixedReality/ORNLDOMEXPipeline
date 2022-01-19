@@ -164,6 +164,9 @@ def test_valid_instance_of_classified_text_addition(create_datapoint):
     ct_1.add_point(cherry_tomato)
     ct_2.add_point(basil)
 
+    unique_categories = set(ct_1.categories)
+    unique_categories.update(ct_2.categories)
+
     assert len(ct_1.points) == 2
     assert len(ct_2.points) == 2
 
@@ -171,7 +174,7 @@ def test_valid_instance_of_classified_text_addition(create_datapoint):
 
     assert combined_ct.parent_hash == t_hash
     assert len(combined_ct.points) == 4
-    assert len(combined_ct.categories) == len(ct_1.categories) + len(ct_2.categories)
+    assert len(combined_ct.categories) == len(unique_categories)
 
 
 # Test JSON
@@ -194,7 +197,7 @@ def test_that_object_remains_the_same_through_json_serialization(create_datapoin
     assert len(ct_1.categories) == 2
 
     temp_json = json.dumps(ct_1, cls=ClassifiedTextEncoder)
-    rebuilt_ct = ClassifiedText(json_str=temp_json)
+    rebuilt_ct = ClassifiedText(parent_hash=t_hash, json_str=json.loads(temp_json))
 
     assert isinstance(rebuilt_ct, ClassifiedText)
     assert len(rebuilt_ct.points) == 4

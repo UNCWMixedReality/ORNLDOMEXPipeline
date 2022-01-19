@@ -8,6 +8,8 @@ from azure.ai.textanalytics import DocumentError, TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 
 from app.ClassifiedText import ClassifiedText, DataPoint
+from app.HashDatabase import HashDatabase
+from app.TextExtraction import TextExtractor
 
 
 class TextClassifier(object):
@@ -16,20 +18,35 @@ class TextClassifier(object):
         self.aws_channel = None
         self.con = sqlite3.connect(db_path)
         self.cache_table_name = "record_db"
+        self.hash_db = HashDatabase(False)
 
         if azure:
             self._instantiate_azure_connection()
 
     # Public methods
-    def classify_single_text_element(
-        self, text: str, service: str = "azure"
-    ) -> ClassifiedText:
+    def classify_single_text_element(self, text: str) -> ClassifiedText:
         """
-        Given: A string of text
+        Given: A string of text and it's hash
         Return: A completed ClassifiedText object
         """
 
+        text_hash = TextExtractor._generate_hash(text)
+
+        if self.hash_db.check_for_existing_hash(text_hash):
+            return self._classify_with_cache(text_hash)
+        elif self.azure_channel is not None:
+            return self._classify_with_azure(text, text_hash)
+
+        return None
+
+    # Top level private methods
+    def _classify_with_azure(self, text: str, text_hash: str = None) -> ClassifiedText:
+        if self.azure_channel is None:
+            self._instantiate_azure_connection()
+
         working_classified_text = ClassifiedText()
+        if text_hash is not None:
+            working_classified_text.parent_hash = text_hash
 
         try:
             document = [text]
@@ -54,15 +71,16 @@ class TextClassifier(object):
             )
             return None
 
-        return working_classified_text
+        # cache results
+        self.hash_db.add_new_results_to_database(working_classified_text, False)
 
-    # Top level private methods
-    def _classify_with_azure(self, text: str) -> ClassifiedText:
-        self._instantiate_azure_connection()
-        return None
+        return working_classified_text
 
     def _classify_with_aws(self, text: str) -> ClassifiedText:
         return None
+
+    def _classify_with_cache(self, text_hash: str) -> ClassifiedText:
+        return self.hash_db.get_classified_text_from_hash(text_hash)
 
     # Utility private methods
 
@@ -72,11 +90,6 @@ class TextClassifier(object):
 
         current_length = len(text)
         return current_length
-
-    def _add_new_responses_to_classified_text(
-        self, current_text: ClassifiedText, new_nouns: dict
-    ):
-        return None
 
     def _instantiate_azure_connection(self):
         key = os.environ.get("AZURE_KEY")

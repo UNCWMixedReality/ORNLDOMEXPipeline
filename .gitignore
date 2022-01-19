@@ -150,3 +150,5 @@ domex_pipeline.log
 
 .vscode/*
 .vscode
+
+api/
