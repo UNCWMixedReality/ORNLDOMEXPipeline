@@ -81,6 +81,7 @@ class ClassifiedText(object):
         return valid_points
 
     def _instantiate_from_json(self, json_str: str, full: bool = False):
+
         if full:
             self.parent_hash = json_str["parent_hash"]
 
