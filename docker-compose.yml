@@ -1,9 +1,37 @@
 version: '3.8'
 
 services:
-  domex_pipeline:
-    build: ./app
-    container_name: domex_pipeline
-    command: pytest
-    volumes: 
-      - ./app/:/usr/src/app/
+  redis:
+    image: redis:6.2.6-alpine
+  api:
+    build: .
+    container_name: api
+    command: python wsgi.py
+    ports:
+      - 5555:5000
+    volumes:
+      - ./api/:/usr/src/api
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=NounExtraction.config.DevelopmentConfig
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+  worker:
+    build: .
+    command: celery --app=NounExtraction.async_extraction.celery worker --loglevel=info -E
+    volumes:
+      - ./api/:/usr/src/api
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=NounExtraction.config.DevelopmentConfig
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - api
+      - redis
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=bad_password

@@ -1,0 +1,43 @@
+{% extends "_base.html" %}
+
+{% block content %}
+
+<div class="starter-template">
+  <h1>UNCW Noun Extraction Pipeline</h1>
+  <hr><br>
+  <div>
+    <h3>Upload your files below for processing</h3>
+    <p class='text-primary mb-0'>The pipeline supports extraction from the following text formats: .txt, .pdf, .doc, .docx</p>
+    <p class='text-secondary'>For your convenience, you can also upload a .zip directory for multi-file processing</p>
+    <div class="mb-3">
+      <input class="form-control" type="file" id="zip_file">
+    </div>
+      <script>
+        $('#zip_file').on('change',function(e){
+            //get the file name
+            var fileName = e.target.files[0].name;
+            //replace the "Choose a file" label
+            $(this).next('.custom-file-label').html(fileName);
+        })
+      </script>
+    </div>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon1">API KEY</span>
+      </div>
+      <input type="text" class="form-control" placeholder="0000-0000-0000" name="api_key" id="api_key" aria-label="Username" aria-describedby="basic-addon1">
+    </div>
+    <button type="button" class="btn btn-primary" onclick="handleUpload()">Submit</button>
+  </div>
+  <br><br>
+  <div>
+    <h3>Task Status</h3>
+    <br>
+    <div id="task-container" class="container-fluid px-5 d-flex flex-row justify-content-evenly flex-wrap">
+
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

@@ -1,10 +1,38 @@
 version: '3.8'
 
 services:
-  domex_pipeline:
-    build: ../app
-    image: sethangell/ornl-domex-pipeline
-    command: pytest
-    container_name: domex_pipeline
-    volumes: 
-      - ../app/:/usr/src/app/
+  redis:
+    image: redis:6.2.6-alpine
+  api:
+    build: ../
+    container_name: api
+    command: gunicorn -w 4 -b 0.0.0.0:12555 "NounExtraction:create_app()" --access-logfile=logs/access.log --log-file=logs/errors.log --log-level=debug
+    ports:
+      - 5556:12555
+    volumes:
+      - ../api/:/usr/src/api
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=NounExtraction.config.DevelopmentConfig
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+  worker:
+    build: ../
+    command: celery --app=NounExtraction.async_extraction.celery worker --loglevel=info -E
+    volumes:
+      - ../api/:/usr/src/api
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=NounExtraction.config.DevelopmentConfig
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - api
+      - redis
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=bad_password
+
