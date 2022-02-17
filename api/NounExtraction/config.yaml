@@ -1,0 +1,7 @@
+db: # postgres sample
+  vendor: postgres 
+  user: postgres
+  password: bad_password 
+  dbname: postgres
+  host: db
+  port: 5432

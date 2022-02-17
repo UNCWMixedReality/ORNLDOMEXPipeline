@@ -150,3 +150,12 @@ domex_pipeline.log
 
 .vscode/*
 .vscode
+
+
+*.db
+*/*.db
+
+api/results/*
+
+api/logs
+api/NounExtraction/config.yml

@@ -1,41 +1,51 @@
+# NOTE: Straight up, this script will most likely not run outside of a container
+
 import os
 import sys
+import time
 
 from celery import Celery
-from flask import current_app
-
-sys.path.append("../")
-from app.__main__ import (  # noqa: E402
+from DocumentExtraction.__main__ import (
     classify_directory,
     classify_single_file,
     classify_zip,
 )
 
-
-def make_celery(app):
-    celery = Celery(
-        app.import_name,
-        backend=app.config["CELERY_RESULT_BACKEND"],
-        broker=app.config["CELERY_BROKER_URL"],
-    )
-    celery.conf.update(app.config)
-
-    class ContextTask(celery.Task):
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return self.run(*args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-
-current_app.config.update(
-    CELERY_BROKER_URL="redis://celery_broker:6379",
-    CELERY_RESULT_BACKEND="redis://celery_broker:6379",
+celery = Celery(__name__)
+celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+celery.conf.result_backend = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379"
 )
-celery = make_celery(current_app)
 
 
-@celery.task()
+@celery.task(name="classify_new_zip")
 def classify_new_zip(file_path: str):
-    return classify_zip(file_path, raw_json=True)
+    return classify_zip(
+        file_path,
+        raw_json=True,
+        db_config=os.path.abspath("NounExtraction/config.yaml"),
+    )
+
+
+@celery.task(name="classify_new_file")
+def classify_new_file(file_path: str):
+    return classify_single_file(
+        file_path,
+        raw_json=True,
+        db_config=os.path.abspath("NounExtraction/config.yaml"),
+    )
+
+
+@celery.task(name="create_task")
+def create_task(task_type):
+    time.sleep(int(task_type) * 10)
+    return True
+
+
+if os.environ.get("DEBUG", False):
+    print("Ooooh someones having a bad day. Here's some info")
+    print("=================================================")
+    print(f"{sys.path = }")
+    print(f"{os.getcwd() = }")
+    print(f"{os.listdir() = }")
+    print("=================================================\n\n")
