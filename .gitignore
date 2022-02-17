@@ -159,3 +159,5 @@ api/results/*
 
 api/logs
 api/NounExtraction/config.yml
+
+api/uploads
